@@ -1,0 +1,166 @@
+---
+title: "Data Reanalysis Draft"
+author: "Madelynne Dudas"
+date: "April 1, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(fig.path = "img/")
+```
+#Data Reanalysis of Locomotor decoupling and the origin of hominin bipedalism (Sylvester, 2006)
+###Summary
+Sylvester (2006) developed the decoupling hypothesis for the evolution of bipedalism which states that bipedalism is an adaptation that allows the shoulder to remain mobile for suspensory locomotion while faced with the need for joint stability for terrestrial locomotion. Sylvester used phenotypic adaptive landscape modeling to test this hypothesis. There were 3 objectives for this paper. The first was to model 900 theoretical niches with stability as the x-axis, mobility on the y-axis, and fitness on the z-axis. The second was to calculate the trade-off line and superimpose it upon each niche. The third objective was to find the maximum shoulder fitness for each niche. Here, I will replicate the simulation of900 niches, superimpose the trade-off line and use the golden search algorithm to search for the maximum shoulder fitness
+
+
+###Modeling 4 of the 900 theorectical niches
+The function below creates the 900 theoretical niches. I wrote it as more of a program than a function where the arguments can be changed for the sake of simplicity because the arguments don't need to be changed for this simulation. Modelling requires 5 parameters as stated in Sylvester (2006). The first 2 are the means of mobility and stability in each population. These range from 0 - 1 in intervals of 0.033. 0 is the least mobile or stable and 1 is the most mobile or stable. The 3rd and 4th parameters are the 2 variances for mobility and stablity both were set at 0.01 (the higher the variance the flatter the landscape because there becomes less of a difference in fitness level so variances were kept small). Covariance was the last parameter and it was set at 0. 
+###Model for high mobility and high stability (mean mobility = 0.5, mean stability = 0.5)
+```{r}
+library (mvtnorm)# pmvnorm which is said to be the function used Sylvester 2006 is in the package mvtnorm. There are more sophistocated adpative landscape package now but this suite the needs for this simulation
+library(grDevices)#for trans3d
+library(graphics)
+mean <-c(.5,.5)#the argument is to be used as the mean vector in the both pmvnorm functions below
+x <- seq(0, 1, length= 30)#this makes the intervals 0.033 for the shoulder stability in populations
+y <- seq(0, 1, length= 30)#this makes the intervals 0.033 for the shoulder mobility in populations
+z<-matrix(rep(0,30*30),nc=30)#this constructs a 30 by 30 (nc = 30) matrix of fitness values and fills it with zeros
+  for(i in 1:30){
+    for(j in 1:30){#these 2 loops allow the below bivariate cumulative normal distribution function to go through all of the means for x & y
+      R<-matrix(c(.01,0,0,.01),nc=2)#this constructs the matrix of variances and covariance which is for sigma below
+      z[i,j]<-pmvnorm(lower=rep(-Inf,2),upper=c(x[i],y[j]),mean=mean,sigma=R)
+      #rep() function make the vector of lower limits -inf for both, the vectors of upper limits are equal to the sequences of means created for x & y, mean draws from the main argument from the overall adaptive lanscape function
+}
+  }
+    #the below lines are for the visualization of the adaptive landscapes
+  
+op <- par(bg = "white")#sets the background to white
+  persp(x,y,z, theta = -30, phi=25, col="white", xlab = "Shoulder Stability", ylab = "Shoulder Mobility", zlab = "Shoulder Fitness", shade=.4)-> pmat#this uses the persp function to make the 3d plots. theta and phi define viewing angles.
+  #the below is for ploting the trade-off line
+  x2 <- seq(.3, 1, length = 30)#vector of x values on trade-off line
+  y2 <- .3/(x2)#vector of y values on trade-off line
+  z2 <- 0
+  for(i in 1:30){
+    z2[i] <- pmvnorm(lower=rep(-Inf,2),upper=c(x2[i],y2[i]),mean=c(.5,.5),sigma=R)
+  }#calculates the z values for the trade-off line
+  #below transforms 3d vectors to 2d points of the trade-off line
+  lines(trans3d(x2,y2,z2, pmat=pmat), col="black", lwd=3)
+  trans3d <- function(x,y,z, pmat) {
+    tr <- cbind(x,y,z,1) %*% pmat 
+    list(x = tr[,1]/tr[,4], y= tr[,2]/tr[,4])
+    
+  }
+  
+
+```
+###Model for high mobility and low stability (mean mobility = 0.5, mean stability = 0.1)
+```{r}
+mean2 = c(.5,.1)
+for(i in 1:30){
+    for(j in 1:30){#these 2 loops allow the below bivariate cumulative normal distribution function to go through all of the means for x & y
+      R<-matrix(c(.01,0,0,.01),nc=2)#this constructs the matrix of variances and covariance which is for sigma below
+      z[i,j]<-pmvnorm(lower=rep(-Inf,2),upper=c(x[i],y[j]),mean=mean2,sigma=R)
+      #rep() function make the vector of lower limits -inf for both, the vectors of upper limits are equal to the sequences of means created for x & y, mean draws from the main argument from the overall adaptive lanscape function
+}
+  }
+    #the below lines are for the visualization of the adaptive landscapes
+  op <- par(bg = "white")#sets the backgrounds to be white
+  persp(x,y,z, theta = -30, phi=30, col="white", xlab = "Shoulder Stability", ylab = "Shoulder Mobility", zlab = "Shoulder Fitness", shade=.5) -> pmat#this uses the persp function to make the 3d plots. theta and phi define viewing angles.
+ x2 <- seq(.3, 1, length = 30)
+y2 <- .3/(x2)
+z2<-0
+for(i in 1:30){
+z2[i] <- pmvnorm(lower=rep(-
+Inf,2),upper=c(x2[i],y2[i]),mean=mean2,sigma=R)
+}
+lines(trans3d(x2,y2,z2, pmat=pmat), col="black", lwd=3)
+trans3d <- function(x,y,z, pmat) {
+tr <- cbind(x,y,z,1) %*% pmat
+list(x = tr[,1]/tr[,4], y= tr[,2]/tr[,4])
+}
+
+
+```
+###Model for low mobility and low stability(mean mobility = 0.1, mean stability = 0.1)
+```{r}
+mean3 = c(.1,.1)
+for(i in 1:30){
+    for(j in 1:30){#these 2 loops allow the below bivariate cumulative normal distribution function to go through all of the means for x & y
+      R<-matrix(c(.01,0,0,.01),nc=2)#this constructs the matrix of variances and covariance which is for sigma below
+      z[i,j]<-pmvnorm(lower=rep(-Inf,2),upper=c(x[i],y[j]),mean=mean3,sigma=R)
+      #rep() function make the vector of lower limits -inf for both, the vectors of upper limits are equal to the sequences of means created for x & y, mean draws from the main argument from the overall adaptive lanscape function
+}
+  }
+    #the below lines are for the visualization of the adaptive landscapes
+  op <- par(bg = "white")#sets the backgrounds to be white
+  persp(x,y,z, theta = -30, phi=30, col="white", xlab = "Shoulder Stability", ylab = "Shoulder Mobility", zlab = "Shoulder Fitness", shade=.5) -> pmat#this uses the persp function to make the 3d plots. theta and phi define viewing angles.
+ x2 <- seq(.3, 1, length = 30)
+y2 <- .3/(x2)
+z2<-0
+for(i in 1:30){
+z2[i] <- pmvnorm(lower=rep(-
+Inf,2),upper=c(x2[i],y2[i]),mean=mean3,sigma=R)
+}
+lines(trans3d(x2,y2,z2, pmat=pmat), col="black", lwd=3)
+trans3d <- function(x,y,z, pmat) {
+tr <- cbind(x,y,z,1) %*% pmat
+list(x = tr[,1]/tr[,4], y= tr[,2]/tr[,4])
+}
+```
+###Model for low mobility and high stability (mean mobility = 0.1, mean stability = 0.5)
+```{r}
+mean3 = c(.1,.5)
+for(i in 1:30){
+    for(j in 1:30){#these 2 loops allow the below bivariate cumulative normal distribution function to go through all of the means for x & y
+      R<-matrix(c(.01,0,0,.01),nc=2)#this constructs the matrix of variances and covariance which is for sigma below
+      z[i,j]<-pmvnorm(lower=rep(-Inf,2),upper=c(x[i],y[j]),mean=mean3,sigma=R)
+      #rep() function make the vector of lower limits -inf for both, the vectors of upper limits are equal to the sequences of means created for x & y, mean draws from the main argument from the overall adaptive lanscape function
+}
+  }
+    #the below lines are for the visualization of the adaptive landscapes
+  op <- par(bg = "white")#sets the backgrounds to be white
+  persp(x,y,z, theta = -30, phi=30, col="white", xlab = "Shoulder Stability", ylab = "Shoulder Mobility", zlab = "Shoulder Fitness", shade=.5) -> pmat#this uses the persp function to make the 3d plots. theta and phi define viewing angles.
+ x2 <- seq(.3, 1, length = 30)
+y2 <- .3/(x2)
+z2<-0
+for(i in 1:30){
+z2[i] <- pmvnorm(lower=rep(-
+Inf,2),upper=c(x2[i],y2[i]),mean=mean3,sigma=R)
+}
+lines(trans3d(x2,y2,z2, pmat=pmat), col="black", lwd=3)
+trans3d <- function(x,y,z, pmat) {
+tr <- cbind(x,y,z,1) %*% pmat
+list(x = tr[,1]/tr[,4], y= tr[,2]/tr[,4])
+}
+```
+##Determining Maximum Fitness
+```{r} 
+library (stats)
+function(){
+#the uses the mvtnorm package again
+x <- seq(0, 1, length= 30)#same as above for mobility
+y <- seq(0, 1, length= 30)#same as above for stability
+z<-0 # starts fitness off at 0 again
+g<-matrix(rep(0,900),nc=30)#builds matrix of 0s
+for(i in 1:30){
+ for(j in i:30){
+ R<-matrix(c(.01,0,0,.01),nc=2)#same variance and covariance matrix as above
+ # Below line is cumulative bivariate
+ z <- function(g) 
+   {pmvnorm(lower=rep(-Inf,2),upper=c(p,.3/p),mean=c(x[i],y[j]),sigma=R)}
+ sto<-optimize(z, c(0,1), maximum=TRUE)
+ sto<-sto$objective[1]
+
+ g[i,j]<-sto
+ g[j,i]<-sto
+
+ }
+ }
+op <- par(bg = "white")
+persp(x,y,g, theta = 130, phi=25, col="lightblue", xlab = "Above Substrate Locomotion", ylab = "Supensory Locomotion", zlab = "Probability of Bipedalism", shade=.4) -> pmat
+return(x)#returm ma
+}
+```
+```{r}
+<img src="img/SLYVESTER2006.JPG" width="775px"/>
+```  
