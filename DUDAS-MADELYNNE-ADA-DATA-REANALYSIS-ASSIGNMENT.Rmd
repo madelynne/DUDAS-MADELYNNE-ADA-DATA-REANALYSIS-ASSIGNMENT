@@ -244,7 +244,16 @@ pmat <- persp(x,y,g, theta = 120, phi=20, col="yellow", xlab = "Demand for Stabi
 
 
 ##Summary
-Here I reproduced the first 3 steps of the simulations performed to test the decoupling hypothesis. The 4 adaptive landscape examples I produced represent both the means of stability and mobility being high and low, as well as, each being high relative to the other. The optimize function allowed me to identify the maximum shoulder fitness in each of the 900 niches (matrix g) and plot those against the demand for both mobility and stability. The results of the study itself suggest that the reduction in the demand for stability for terrestrial locomotion in the shoulder would have allowed the shoulder to remain mobile for suspensory locomotion. Sylvester suggests that this would have been critical and advantageous in order to not compromise arboreal safety but allow for terrestrial locomotion with the hindlimbs. The results also showed that the absolute and proportional amount of bipedalism (reduction in the demand for stability) that is neccessary to reach a relatively high fitness level because of the shoulder's ability to remain mobile.
+Here I reproduced the first 3 steps of the simulations performed to test the decoupling hypothesis. The 4 adaptive
+landscape examples I produced represent both the means of stability and mobility being high and low, as well as, each
+being high relative to the other. The optimize function allowed me to identify the maximum shoulder fitness in each
+of the 900 niches (matrix g) and plot those against the demand for both mobility and stability. The results of the
+study itself suggest that the reduction in the demand for stability for terrestrial locomotion in the shoulder would
+have allowed the shoulder to remain mobile for suspensory locomotion. Sylvester suggests that this would have been
+critical and advantageous in order to not compromise arboreal safety but allow for terrestrial locomotion with the
+hindlimbs. The results also showed that the absolute and proportional amount of bipedalism (reduction in the demand
+for stability) that is neccessary to reach a relatively high fitness level because of the shoulder's ability to
+remain mobile.
 
 
 
